@@ -1,0 +1,104 @@
+package com.elsa.dfsutils.file;
+
+import java.io.File;
+
+import com.elsa.dfsutils.constants.WaterMarkGravity;
+import com.elsa.dfsutils.handle.ImgHandler;
+
+/**
+ * 
+ * @describe 
+ * @author 叶礼锋
+ * 
+ * 2014-12-22 下午2:16:18
+ */
+@SuppressWarnings(value = { "unused", "deprecation", "serial", "unchecked", "static-access", "rawtypes" })
+public class ImgFile extends BaseFile{
+	//	composite -dissolve 60 -gravity SouthEast -geometry +10+10  Z:\B.png Z:\A.jpg  NEW.jpg
+	
+	private Integer rawWidth=null;//宽度
+	private Double quality=null;//0%~100% 一般不要低于75d
+	private boolean interlace=false;//开启渐进加载,限JPEG
+	private WaterMark watermark=null;//水印
+	
+	public Integer getRawWidth() {
+		return rawWidth;
+	}
+	public void setRawWidth(Integer rawWidth) {
+		this.rawWidth = rawWidth;
+	}
+	public Double getQuality() {
+		return quality;
+	}
+	public void setQuality(Double quality) {
+		this.quality = quality;
+	}
+	public ImgFile() {
+		super.setHandler(new ImgHandler(this));
+	}
+	public boolean isInterlace() {
+		return interlace;
+	}
+	public void setInterlace(boolean interlace) {
+		this.interlace = interlace;
+	}
+	public WaterMark getWatermark() {
+		return watermark;
+	}
+	public void setWatermark(WaterMark watermark) {
+		this.watermark = watermark;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	public class WaterMark{
+		private File wmfile=null;//水印图片
+		private int dissolve=100;//透明度 0:完全透明
+		private WaterMarkGravity gravity=WaterMarkGravity.SouthEast;//坐标起始方位 默认右下方
+		private Integer width=null;
+		private Integer high=null;
+		private int x=0;//相对起始位置的偏移量(像素)
+		private int y=0;//相对起始位置的偏移量(像素)
+		public File getWmfile() {
+			return wmfile;
+		}
+		public void setWmfile(File wmfile) {
+			this.wmfile = wmfile;
+		}
+		public int getDissolve() {
+			return dissolve;
+		}
+		public void setDissolve(int dissolve) {
+			this.dissolve = dissolve;
+		}
+		public WaterMarkGravity getGravity() {
+			return gravity;
+		}
+		public void setGravity(WaterMarkGravity gravity) {
+			this.gravity = gravity;
+		}
+		public int getX() {
+			return x;
+		}
+		public void setX(int x) {
+			this.x = x;
+		}
+		public int getY() {
+			return y;
+		}
+		public void setY(int y) {
+			this.y = y;
+		}
+		public Integer getHigh() {
+			return high;
+		}
+		public void setHigh(Integer high) {
+			this.high = high;
+		}
+		public Integer getWidth() {
+			return width;
+		}
+		public void setWidth(Integer width) {
+			this.width = width;
+		}
+	}
+}

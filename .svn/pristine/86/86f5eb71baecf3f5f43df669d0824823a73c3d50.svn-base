@@ -1,0 +1,38 @@
+package com.elsa.dfsutils.file;
+
+import java.io.File;
+
+import com.elsa.dfsutils.handle.ImgHandler;
+
+/**
+ * 
+ * @describe 
+ * @author 叶礼锋
+ * 
+ * 2014-12-22 下午2:16:18
+ */
+@SuppressWarnings(value = { "unused", "deprecation", "serial", "unchecked", "static-access", "rawtypes" })
+public class ImgFile extends BaseFile{
+	
+	private Integer rawWidth=null;//宽度
+	private Double quality=null;//0%~100% 一般不要低于75d
+	
+	public Integer getRawWidth() {
+		return rawWidth;
+	}
+	public void setRawWidth(Integer rawWidth) {
+		this.rawWidth = rawWidth;
+	}
+	public Double getQuality() {
+		return quality;
+	}
+	public void setQuality(Double quality) {
+		this.quality = quality;
+	}
+	
+	public ImgFile() {
+		super.setHandler(new ImgHandler(this));
+	}
+
+	
+}

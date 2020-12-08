@@ -1,0 +1,211 @@
+package com.elsa.dfsutils.service.impl;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.csource.common.NameValuePair;
+import org.csource.fastdfs.StorageClient1;
+import org.csource.fastdfs.TrackerServer;
+
+import com.elsa.dfsutils.constants.MetaDataKey;
+import com.elsa.dfsutils.file.BaseFile;
+import com.elsa.dfsutils.service.DfsService;
+import com.elsa.dfsutils.util.TrackerServerPool;
+
+
+/**
+ * 
+ * @describe 文件访问服务接口
+ * @author 叶礼锋
+ * 
+ * 2014-12-16 上午9:56:07
+ */
+@SuppressWarnings(value = { "unused", "deprecation", "serial", "unchecked", "static-access", "rawtypes" })
+public class DfsServiceImpl implements DfsService{
+	
+	private TrackerServerPool trackerServerPool;
+
+	public DfsServiceImpl(TrackerServerPool storageClient1Pool) {
+		this.trackerServerPool=storageClient1Pool;
+	}
+
+	/**
+	 * 上传文件
+	 * @param baseFile 文件实体
+	 * @param fileExtName 文件扩展名
+	 * @param client 存储节点
+	 * @return 文件ID
+	 * @throws Exception
+	 */
+	private String uploadFile(BaseFile baseFile,String fileExtName,StorageClient1 client) throws Exception{
+		baseFile.handle();//文件处理
+		List<NameValuePair> metaList = baseFile.getNameValuePair();//封装元数据
+		return client.upload_file1(baseFile.getFile().getAbsolutePath(), fileExtName, metaList.toArray(new NameValuePair[0]));//写入FastDFS  
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
+	public String uploadFile(BaseFile baseFile) {
+		String fileId=null;
+		TrackerServer trackerServer=null;
+		try {
+			trackerServer = trackerServerPool.borrowObject();//获得连接
+			StorageClient1  client=new StorageClient1(trackerServer,null);
+			String fileExtName=baseFile.getFileExtName();
+			if(fileExtName==null){
+				return null;
+			}
+			fileId=uploadFile(baseFile,fileExtName,client);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+			trackerServerPool.returnObject(trackerServer);
+		} 
+		return fileId;
+	}
+
+	@Override
+	public String[] batchUploadFile(BaseFile... baseFiles) {
+		TrackerServer trackerServer=null;
+		String fileIds[]=new String[baseFiles.length];
+		try {
+			trackerServer =  trackerServerPool.borrowObject();//获得连接//获得连接
+			StorageClient1  client=new StorageClient1(trackerServer,null);
+			int i=0;
+			for (BaseFile baseFile : baseFiles) {
+				String fileExtName=baseFile.getFileExtName();
+				if(fileExtName==null){
+					fileIds[i]=null;
+					continue;
+				}else{
+					fileIds[i]=uploadFile(baseFile,fileExtName,client);
+				}
+				i++;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+			trackerServerPool.returnObject(trackerServer);
+		}
+		return fileIds;
+	}
+	
+	@Override
+	public int deleteFile(String fileid) {
+		int result=1;
+		TrackerServer trackerServer=null;
+		try {
+			trackerServer =  trackerServerPool.borrowObject();//获得连接
+			StorageClient1  client=new StorageClient1(trackerServer,null);
+			result=client.delete_file1(fileid);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+			trackerServerPool.returnObject(trackerServer);
+		}
+		return result;
+	}
+
+	@Override
+	public int[] batchDeleteFile(String... fileids) {
+		int result[]=new int[fileids.length];
+		TrackerServer trackerServer=null;
+		try {
+			trackerServer =  trackerServerPool.borrowObject();//获得连接
+			StorageClient1  client=new StorageClient1(trackerServer,null);
+			int i=0;
+			for (String fileid : fileids) {
+				result[i++]=client.delete_file1(fileid);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+			trackerServerPool.returnObject(trackerServer);
+		}
+		return result;
+	}
+
+	@Override
+	public byte[] getFileBytes(String fileid) {
+		byte[] fbuf=null;
+		TrackerServer trackerServer=null;
+		try {
+			trackerServer =  trackerServerPool.borrowObject();//获得连接
+			StorageClient1  client=new StorageClient1(trackerServer,null);
+			fbuf=client.download_file1(fileid);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+			trackerServerPool.returnObject(trackerServer);
+		}
+		return fbuf;
+	}
+
+	@Override
+	public Map<MetaDataKey,String> getFileMetaData(String fileid) {
+		Map<MetaDataKey,String> metaData=null;
+		TrackerServer trackerServer=null;
+		try {
+			trackerServer =  trackerServerPool.borrowObject();//获得连接
+			StorageClient1  client=new StorageClient1(trackerServer,null);
+			NameValuePair nvps[]=client.get_metadata1(fileid);
+			metaData=new HashMap(nvps.length);
+			for (NameValuePair nvp : nvps) {
+				metaData.put(MetaDataKey.valueOf(nvp.getName()), nvp.getValue());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+			trackerServerPool.returnObject(trackerServer);
+		}
+		return metaData;
+	}
+	
+	@Override
+	public boolean setFileMetaData(String fileid, Map<MetaDataKey, String> metaData) {
+		int result=0;
+		TrackerServer trackerServer=null;
+		try {
+			trackerServer =  trackerServerPool.borrowObject();//获得连接
+			StorageClient1  client=new StorageClient1(trackerServer,null);
+			NameValuePair metaArray[]=new NameValuePair[metaData.size()];
+			int i=0;
+			if(metaData!=null){
+				for (MetaDataKey key : metaData.keySet()) {
+					metaArray[i++]=new NameValuePair(key.name(), metaData.get(key));
+				}
+			}
+			result=client.set_metadata1(fileid, metaArray, (byte)77);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+			trackerServerPool.returnObject(trackerServer);
+		}
+		return result==0;
+	}
+
+	@Deprecated
+	private String modifyFile(String fileid, BaseFile baseFile) {
+		String newFileId=null;
+		NameValuePair nvps[]=null;
+		Map<String,String> metaData=null;
+		TrackerServer trackerServer=null;
+		try {
+			trackerServer =  trackerServerPool.borrowObject();//获得连接
+			StorageClient1  client=new StorageClient1(trackerServer,null);
+			client.delete_file1(fileid);
+			String fileExtName=baseFile.getFileExtName();
+			if(fileExtName==null){
+				return null;
+			}
+			newFileId=uploadFile(baseFile,fileExtName,client);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+			trackerServerPool.returnObject(trackerServer);
+		}
+		return newFileId;
+	}
+	
+}

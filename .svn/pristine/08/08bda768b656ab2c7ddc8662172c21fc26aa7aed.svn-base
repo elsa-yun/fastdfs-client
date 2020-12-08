@@ -1,0 +1,17 @@
+package com.elsa.dfsutils.constants;
+/**
+ * 
+ * @describe
+ * @author 叶礼锋
+ * 
+ *         2014-12-18 下午1:48:11
+ */
+@SuppressWarnings(value = { "unused", "deprecation", "serial", "unchecked", "static-access", "rawtypes" })
+public enum MetaDataKey{
+		FILENAME,//文件名
+		FILESIZE,//大小
+		CREATOR,//创建者
+		SOURCE,//来源
+		EXINFO//扩展信息 信息实在太多，推荐使用JSON
+}
+	
