@@ -22,6 +22,7 @@ import com.elsa.dfsutils.file.GeneralFile;
 import com.elsa.dfsutils.file.ImgFile;
 import com.elsa.dfsutils.file.ImgFile.WaterMark;
 import com.elsa.dfsutils.file.TxtFile;
+import com.elsa.dfsutils.service.DfsService;
 import com.elsa.dfsutils.service.impl.DfsServiceImpl;
 import com.elsa.dfsutils.util.TrackerServerFactory;
 import com.elsa.dfsutils.util.TrackerServerPool;
